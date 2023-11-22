@@ -13,6 +13,8 @@ class SertifikatController extends Controller
     public function index()
     {
         //
+        $sertifikats = Sertifikat::all();
+        return view('sertifikat.index', compact('sertifikats'));
     }
 
     /**
@@ -20,7 +22,8 @@ class SertifikatController extends Controller
      */
     public function create()
     {
-        //
+        //create
+        return view('sertifikat.create');
     }
 
     /**
@@ -28,7 +31,13 @@ class SertifikatController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //store
+    
+        $sertifikat = new Sertifikat($request->all());
+
+        $sertifikat->save();
+
+        return redirect('/sertifikat')->with('success', 'Sertifikat stored successfully');
     }
 
     /**

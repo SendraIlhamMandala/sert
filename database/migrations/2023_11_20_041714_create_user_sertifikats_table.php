@@ -14,6 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_sertifikats', function (Blueprint $table) {
+            $table->string('sebagai')->nullable();
             $table->foreignIdFor(User::class)->constrained()->onDelete('cascade');
             $table->foreignIdFor(Sertifikat::class)->constrained()->onDelete('cascade');
       

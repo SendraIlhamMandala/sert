@@ -31,11 +31,16 @@
                                         <td>{{ $sertifikat->name }}</td>
                                         <td>{{ $sertifikat->url_qrcode }}</td>
                                         <td>{{ $sertifikat->nomor_sertifikat }}</td>
-                                        <td>{{ $sertifikat->sebagai }}</td>
+                                        <td>{{ DB::table('user_sertifikats')
+                                                ->where('user_id', Auth::user()->id)
+                                                ->where('sertifikat_id', $sertifikat->id)
+                                                ->get()
+                                                ->first()
+                                                ->sebagai }}</td>
                                         <td>{{ $sertifikat->tanggal }}</td>
                                         <td>{{ $sertifikat->keterangan }}</td>
 
-                                        <td> <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $sertifikat->url_qrcode }}" alt=""></td>
+                                        <td> <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $sertifikat->id }}" alt=""></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -60,6 +65,8 @@
                             @endforeach
                         </tbody>
                     </table>
+
+
                 </div>
             </div>
         </div>

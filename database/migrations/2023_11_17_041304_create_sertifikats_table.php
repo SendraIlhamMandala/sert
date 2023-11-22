@@ -16,10 +16,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('nomor_sertifikat');
-            $table->string('sebagai');
             $table->date('tanggal');
             $table->text('keterangan');
-            $table->string('url_qrcode');
+            // $table->string('url_qrcode');
             $table->timestamps();
         });
     }

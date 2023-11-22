@@ -21,9 +21,7 @@ class SertifikatFactory extends Factory
 
 
             'name' => $this->faker->name,
-            'url_qrcode' => $this->faker->url,
             'nomor_sertifikat' => $this->faker->phoneNumber,
-            'sebagai' => $this->faker->name,
             'tanggal' => $this->faker->date,
             'keterangan' => $this->faker->text,
             ];
