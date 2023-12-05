@@ -18,4 +18,11 @@ class Sertifikat extends Model
     {
         return $this->belongsToMany(User::class,'user_sertifikats');
     }
+
+    //has one lokasigambar
+
+    public function lokasigambar()
+    {
+        return $this->hasOne(LokasiGambar::class);
+    }
 }

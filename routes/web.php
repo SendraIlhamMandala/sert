@@ -52,13 +52,24 @@ Route::get('/sertifikat/all', function () {
     }
     return 'success';
 });
+
+Route::get('/sertifikat/addusers/{id}', [SertifikatController::class, 'addUsers'] )->name('sertifikat.addusers');
+Route::post('/sertifikat/storeusers/{id}', [SertifikatController::class, 'storeUsers'] )->name('sertifikat.store.users');
+
 Route::resource('sertifikat', SertifikatController::class)->middleware('auth');
 
 Route::get('/sertifikat/canvas/{id}', function ($id) {
     [$user_id, $sertifikat_id] = explode('-', $id);
     $user = User::find($user_id);
-    $sertifikat = Sertifikat::find($user_id);
-    return view('sertifikat.canvas', compact('sertifikat','user', 'sertifikat_id'));
+    $sertifikat = Sertifikat::find($sertifikat_id);
+    // dd(collect(collect(json_decode($sertifikat->lokasigambar->multiple))['x'])[1]);
+
+    $sebagai = DB::table('user_sertifikats')
+    ->where('user_id', $user_id)
+    ->where('sertifikat_id', $sertifikat_id)
+    ->get()
+    ->first()->sebagai;
+    return view('sertifikat.canvas', compact('sertifikat','user', 'sertifikat_id', 'sebagai'));
 })->name('sertifikat.download');
 
 Route::get('qrlib/{param}', function ($param) {
@@ -76,5 +87,9 @@ Route::get('qrlibtest', function () {
     echo '<img src="/qrlib" />';
 })->name('qrlib');
 
+
+Route::get('svgkit', function () {
+    return view('svgkit');
+});
 
 require __DIR__.'/auth.php';

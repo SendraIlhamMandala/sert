@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('nomor_sertifikat');
             $table->date('tanggal');
             $table->text('keterangan');
+            $table->text('gambar')->default('sertifikat/default.png');
             // $table->string('url_qrcode');
             $table->timestamps();
         });
