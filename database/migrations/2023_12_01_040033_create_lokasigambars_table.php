@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('colorSebagai');
             $table->string('ukuranQR');
             $table->text('fontUrl')->nullable()->default('-');
-            $table->text('multiple');
+            $table->text('multiple')->default('[]');
 
             $table->foreignIdFor(Sertifikat::class);
 

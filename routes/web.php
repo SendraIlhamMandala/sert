@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SertifikatController;
+use App\Http\Controllers\UserController;
 use App\Models\Sertifikat;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -23,8 +24,8 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    $sertifikat = \App\Models\Sertifikat::find(1);
-    return view('dashboard', compact('sertifikat'));
+    
+    return view('dashboard2');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -33,19 +34,22 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::resource('users', UserController::class)->middleware('auth');
+
+Route::post('cari', [UserController::class, 'carinama'])->name('carinama');
 
 Route::get('/sertifikat/all', function () {
     $sertifikats = Sertifikat::find(1);
     $users = \App\Models\User::all();
 
     DB::table('user_sertifikats')
-    ->where('user_id', 1)
-    ->where('sertifikat_id', 1)
-    ->update(['sebagai' => 'peserta']);
-    
+        ->where('user_id', 1)
+        ->where('sertifikat_id', 1)
+        ->update(['sebagai' => 'peserta']);
+
     DB::table('user_sertifikats')
-    ->where('user_id', 1)
-    ->where('sertifikat_id', 1)->get();
+        ->where('user_id', 1)
+        ->where('sertifikat_id', 1)->get();
 
     foreach ($users as $key => $value) {
         $value->sertifikats()->sync($sertifikats);
@@ -53,8 +57,10 @@ Route::get('/sertifikat/all', function () {
     return 'success';
 });
 
-Route::get('/sertifikat/addusers/{id}', [SertifikatController::class, 'addUsers'] )->name('sertifikat.addusers');
-Route::post('/sertifikat/storeusers/{id}', [SertifikatController::class, 'storeUsers'] )->name('sertifikat.store.users');
+Route::put('/sertifikat/updatedata/{id}', [SertifikatController::class, 'updatedata'])->name('sertifikat.updatedata');
+Route::get('/sertifikat/addusers/{id}', [SertifikatController::class, 'addUsers'])->name('sertifikat.addusers');
+Route::post('/sertifikat/storeusers/{id}', [SertifikatController::class, 'storeUsers'])->name('sertifikat.store.users');
+Route::get('/sertifikat/removeuser/{id}', [SertifikatController::class, 'removeUser'])->name('sertifikat.removeuser');
 
 Route::resource('sertifikat', SertifikatController::class)->middleware('auth');
 
@@ -63,23 +69,25 @@ Route::get('/sertifikat/canvas/{id}', function ($id) {
     $user = User::find($user_id);
     $sertifikat = Sertifikat::find($sertifikat_id);
     // dd(collect(collect(json_decode($sertifikat->lokasigambar->multiple))['x'])[1]);
+    // dd($user->name);
+    $font_urls = explode(';', $sertifikat->lokasigambar->fontUrl);
 
     $sebagai = DB::table('user_sertifikats')
-    ->where('user_id', $user_id)
-    ->where('sertifikat_id', $sertifikat_id)
-    ->get()
-    ->first()->sebagai;
-    return view('sertifikat.canvas', compact('sertifikat','user', 'sertifikat_id', 'sebagai'));
+        ->where('user_id', $user_id)
+        ->where('sertifikat_id', $sertifikat_id)
+        ->get()
+        ->first()->sebagai;
+    return view('sertifikat.canvas', compact('sertifikat', 'user', 'sertifikat_id', 'sebagai', 'font_urls'));
 })->name('sertifikat.download');
 
 Route::get('qrlib/{param}', function ($param) {
-    include ('../App/Http/Controllers/QrGenerator/qrlib.php');
-// outputs image directly into browser, as PNG stream
-$text = str_replace('_', '/', $param);
+    include('../App/Http/Controllers/QrGenerator/qrlib.php');
+    // outputs image directly into browser, as PNG stream
+    $text = str_replace('_', '/', $param);
 
-$file = tempnam(sys_get_temp_dir(), 'qr') . '.png';
-QRcode::png($text, $file, QR_ECLEVEL_H , 4 , 1 );
-return response(file_get_contents($file))->header('Content-Type', 'image/png');
+    $file = tempnam(sys_get_temp_dir(), 'qr') . '.png';
+    QRcode::png($text, $file, QR_ECLEVEL_H, 4, 1);
+    return response(file_get_contents($file))->header('Content-Type', 'image/png');
 })->name('qrlib');
 
 
@@ -92,4 +100,4 @@ Route::get('svgkit', function () {
     return view('svgkit');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

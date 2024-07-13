@@ -7,6 +7,7 @@ use App\Models\Sertifikat;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 
@@ -18,7 +19,7 @@ class SertifikatController extends Controller
     public function index()
     {
         //
-        $sertifikats = Sertifikat::all();
+        $sertifikats = Sertifikat::orderBy('tanggal', 'desc')->get();
         return view('sertifikat.index', compact('sertifikats'));
     }
 
@@ -71,7 +72,7 @@ class SertifikatController extends Controller
             'colorSebagai' => '#000',
             'ukuranQR' => '1',
             'fontUrl' => '-',
-            'multiple' => '-',
+            'multiple' => '[]',
             'sertifikat_id' => $sertifikat->id
         ]);
 
@@ -112,15 +113,16 @@ class SertifikatController extends Controller
     public function update(Request $request, Sertifikat $sertifikat)
     {
 
-        //
+        // dd($request->all());
 
         $multiple = json_encode($request->multiple);
 
-
-
         $lokasigambar = $request;
-        $lokasigambar['multiple'] = $multiple;
+        
+        $lokasigambar['multiple'] = ($multiple == 'null') ? '[]' : $multiple;
+
         $lokasigambar = $lokasigambar->toArray();
+        
         array_shift($lokasigambar);
         array_shift($lokasigambar);
         // dd($lokasigambar,$multiple);
@@ -138,6 +140,13 @@ class SertifikatController extends Controller
     public function destroy(Sertifikat $sertifikat)
     {
         //
+        $sertifikat->lokasigambar()->delete();
+        // Now delete the Sertifikat
+        $sertifikat->delete();
+
+        // Redirect to a given route with a success message
+        return redirect()->route('sertifikat.index')->with('success', 'Sertifikat deleted successfully');
+        
     }
 
     public function addUsers($id)
@@ -190,5 +199,54 @@ class SertifikatController extends Controller
 
 
         return redirect('/sertifikat/' . $id)->with('success', 'Sertifikat stored successfully');
+    }
+
+    public function updatedata(Request $request, $id)
+    {
+        // dd($request->all(),$id);
+        $sertifikat = Sertifikat::find($id);
+        
+
+        if ($request->hasFile('gambar')) {
+            
+            $image = $request->file('gambar');
+            $imagePath = $image->store('sertifikat', 'public');
+    
+            // Save the image path to the database or perform any other operations
+    
+            // Example: Saving the image path to a model attribute
+            $sertifikat->gambar = $imagePath;
+            $sertifikat->save();
+
+
+            if ($sertifikat) {
+                // Delete the old image if exists
+                Storage::delete('public/' . $sertifikat->image);
+                // Update the sertifikat with the new image path
+                $sertifikat->update(['gambar' => $imagePath]);
+            }
+        }
+
+        // Update sertifikat attributes from the request
+        $sertifikat->update($request->except(['_token', 'gambar']));
+
+        return redirect('/sertifikat/' . $id)->with('success', 'Sertifikat stored successfully');
+
+
+    }
+
+    public function removeUser($id){
+        list(  $sertifikat_id  , $user_id) = explode('-', $id);
+        
+
+        $user = User::find($user_id);
+        $sertifikat = Sertifikat::find($sertifikat_id);
+    
+
+        if ($user && $sertifikat) {
+            $user->sertifikats()->detach($sertifikat->id);
+        }
+
+        return redirect()->back()->with('success', '{$user->name} removed successfully');
     }
 }
